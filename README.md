@@ -7,5 +7,5 @@ git commit -m "your message"
 git push
 
 To pull new files:
-git checkout
+git checkout dev
 git pull
