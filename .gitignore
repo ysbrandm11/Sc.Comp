@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.venv/
+.env
+.ipynb_checkpoints/
+
+Ass1/results/
+*.png
+*.pdf
+*.mp4
+*.gif
+*.csv
+*.npy
