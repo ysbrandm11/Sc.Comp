@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 def initial_condition(x, case):
     if case == 1:
@@ -33,6 +34,9 @@ def string_simulation(case, N=100, dt=0.001, T=1, c=1, L=1):
 
     plt.plot(x, psi_prev, label=f"t={0.0}")
 
+    data = []
+    data.append(psi_prev)
+
     for n in range(1, nt + 1):
         psi_next = np.zeros(N+1)
 
@@ -45,17 +49,37 @@ def string_simulation(case, N=100, dt=0.001, T=1, c=1, L=1):
         if n*dt in plot_times:
             plt.plot(x, psi_curr, label=f"t={n*dt:.1f}")
 
+        data.append(psi_curr)
+
         psi_prev = psi_curr
         psi_curr = psi_next
 
-    plt.title(f"Case {case}")
+    plt.title(f"Initial Condition {case}")
     plt.xlabel("x")
     plt.ylabel("Psi(x,t)")
     plt.legend()
     plt.show()
 
+    return x, data
+
 
 cases = [1, 2, 3]
 
 for i in cases:
-    string_simulation(i)
+    x, data = string_simulation(i)
+
+    fig, ax = plt.subplots()
+    line, = ax.plot(x, data[0])
+    ax.set_ylim(-1.5, 1.5)
+    ax.set_xlabel("x")
+    ax.set_ylabel("Psi(x,t)")
+    ax.set_title(f"Simulation Initial Condition {i}")
+
+    def update(frame):
+        line.set_ydata(data[frame])
+        return line,
+
+    anim = animation.FuncAnimation(fig, update, frames=len(data), interval=50, blit=True)
+
+    plt.show()
+    
