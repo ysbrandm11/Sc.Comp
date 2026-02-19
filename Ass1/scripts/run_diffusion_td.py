@@ -26,7 +26,7 @@ def plot_field(c: np.ndarray, t: float, L: float, path: str) -> None:
 
 def main():
     # Parameters
-    N = 100
+    N = 50
     L = 1.0
     D = 1.0
 
