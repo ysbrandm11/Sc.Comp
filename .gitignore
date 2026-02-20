@@ -11,3 +11,5 @@ Ass1/results/
 *.gif
 *.csv
 *.npy
+
+.vscode/
