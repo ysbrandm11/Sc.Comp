@@ -6,7 +6,7 @@ from Ass1.src.diffusion_td import make_grid, initialize_c, step_explicit
 
 
 def update(frame, state):
-    
+
     for _ in range(state["steps"]):
         c_old = state["c"]
         c_new = step_explicit(
