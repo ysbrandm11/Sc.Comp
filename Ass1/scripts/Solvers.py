@@ -1,72 +1,86 @@
 import numpy as np
 
-def Jacobi(A, b, max_iterations=100, eps=1e-6, return_delta = False):
-    A = np.asarray(A, dtype=float)
-    b = np.asarray(b, dtype=float)
-    x = np.zeros(A.shape[0], dtype=float)
-    D = np.diag(A)
-    R = A - np.diagflat(D)
-    D_inv = D**(-1)
+def jacobi(c, max_iterations=1000, eps=1e-6, return_delta = False):
+    """
+    Jacobi iteration for Laplace equation on a 2D grid.
+    Boundary values are assumed fixed.
+    """
+    c = c.astype(float)
+    nx, ny = c.shape
+    c_new = c.copy()
+    deltas = []
+    for k in range(max_iterations):
+        delta = 0.0
+        # loop over interior points only
+        for i in range(1, nx-1):
+            for j in range(1, ny-1):
+                c_new[i, j] = 0.25 * (
+                    c[i+1, j] +
+                    c[i-1, j] +
+                    c[i, j+1] +
+                    c[i, j-1]
+                )
+                delta = max(delta, abs(c_new[i, j] - c[i, j]))
+                deltas.append(delta)
 
-    converged = False
-    for _ in range(1, max_iterations + 1):
-        x_new = D_inv * (b - R @ x)
-
-        if np.linalg.norm(x_new - x) <= eps:
-            x = x_new
-            converged = True
+        if delta < eps:
+            print(f"Converged after {k+1} iterations")
             break
-        x = x_new
-    if converged == False:
-        print("Warning: Jacobi iteration did not converge within the maximum number of iterations.")
+        c[:] = c_new[:]
 
-    return x
+    return c_new if not return_delta else (c_new, deltas)
 
-def gauss_seidel(A, b, eps=1e-8, max_iterations=10_000, return_delta=False):
-    A = np.asarray(A, dtype=float)
-    b = np.asarray(b, dtype=float)
+def gauss_seidel(c, max_iterations=1000, eps=1e-6, return_delta = False):
+    c = c.astype(float)
+    nx, ny = c.shape
+    deltas = []
+    for k in range(max_iterations):
+        delta = 0.0
 
-    n = A.shape[0]
-    x = np.zeros(n, dtype=float)
+        for i in range(1, nx-1):
+            for j in range(1, ny-1):
 
-    converged = False
-    for k in range(1, max_iterations + 1):
-        x_old = x.copy()
+                old_value = c[i, j]
 
-        for i in range(n):
-            s1 = A[i, :i] @ x[:i]
-            s2 = A[i, i+1:] @ x_old[i+1:]
-            x[i] = (b[i] - s1 - s2) / A[i, i]
+                c[i, j] = 0.25 * (
+                    c[i+1, j] +   # old
+                    c[i-1, j] +   # already updated
+                    c[i, j+1] +   # old
+                    c[i, j-1]     # already updated
+                )
 
-        if np.linalg.norm(x - x_old) <= eps:
-            converged = True
+                delta = max(delta, abs(c[i, j] - old_value))
+                deltas.append(delta)
+
+        if delta < eps:
+            print(f"Converged after {k+1} iterations")
             break
-    if not converged:
-        print("Warning: Gauss-Seidel iteration did not converge within the maximum number of iterations.")
-    return x
 
-import numpy as np
+    return c if not return_delta else (c, deltas)
 
-def sor(A, b, omega, eps=1e-8, max_iterations=10_000, return_delta=False):
-    A = np.asarray(A, dtype=float)
-    b = np.asarray(b, dtype=float)
-    n = A.shape[0]
+def sor(c, omega, max_iterations=1000, eps=1e-6, return_delta = False):
+    c = c.astype(float)
+    nx, ny = c.shape
+    deltas = []
+    for k in range(max_iterations):
+        delta = 0.0
 
-    x = np.zeros(n, dtype=float)
+        for i in range(1, nx-1):
+            for j in range(1, ny-1):
 
-    converged = False
-    for k in range(1, max_iterations + 1):
-        x_old = x.copy()
-        for i in range(n):
-            s1 = A[i, :i] @ x[:i]
-            s2 = A[i, i+1:] @ x_old[i+1:]
-            x_gs = (b[i] - s1 - s2) / A[i, i]
-            x[i] = (1.0 - omega) * x_old[i] + omega * x_gs
+                old_value = c[i, j]
 
-        if np.linalg.norm(x - x_old) <= eps:
-            converged = True
+                c[i, j] = omega/4 * (
+                    c[i+1, j] +   # old
+                    c[i-1, j] +   # already updated
+                    c[i, j+1] +   # old
+                    c[i, j-1]     # already updated
+                ) + (1 - omega) * old_value
+
+                delta = max(delta, abs(c[i, j] - old_value))
+                deltas.append(delta)
+
+        if delta < eps:
+            print(f"Converged after {k+1} iterations")
             break
-    if not converged:
-        print("Warning: SOR iteration did not converge within the maximum number of iterations.")
-
-    return x
+    return c if not return_delta else (c, deltas)
