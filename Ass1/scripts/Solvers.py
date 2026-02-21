@@ -67,9 +67,10 @@ def gauss_seidel(c, max_iterations=1000, eps=1e-5, return_delta=False):
 
     return (c, deltas) if return_delta else c
 
-def sor(c, omega, max_iterations=1000, eps=1e-6, return_delta = False):
+def sor(c, omega, max_iterations=1000, eps=1e-5, return_delta = False,
+        find_omega=False):
     c = c.astype(float)
-    nx, ny = c.shape
+    ny, nx = c.shape
     deltas = []
     bottom = c[0, :].copy()
     top    = c[-1, :].copy()
@@ -79,7 +80,6 @@ def sor(c, omega, max_iterations=1000, eps=1e-6, return_delta = False):
 
         for j in range(1, ny - 1):
             for i in range(nx):
-
                 old_value = c[j, i]
                 c[j, i] = (omega/4) * (
                     c[j, (i + 1) % nx] +
@@ -97,4 +97,6 @@ def sor(c, omega, max_iterations=1000, eps=1e-6, return_delta = False):
         if delta < eps:
             print(f"Converged after {k+1} iterations")
             break
+    if find_omega:
+        return k+1
     return c if not return_delta else (c, deltas)

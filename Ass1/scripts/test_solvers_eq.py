@@ -17,4 +17,4 @@ def make_c(Nx=50, Ny=50):
 
 c = make_c(Nx=50, Ny=50)
 
-print(jacobi(c, max_iterations=100, eps=1e-6, return_delta=True))
+c = gauss_seidel(c, max_iterations=100, eps=1e-6, return_delta=False)
