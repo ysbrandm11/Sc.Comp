@@ -1,11 +1,17 @@
 import matplotlib.pyplot as plt
-import numpy as np
-from Wave_function import wave_1d
+
+from Ass1.src.wave import phi_1, phi_2, phi_3
+from Ass1.src.wave_solver import wave_1d
 
 # Change according to which function wanted
-from functions_exc1 import phi_2 as f
+f = phi_3
+
+N = 200
+dt = 0.001
+T = 1.0
 
 x, U, dt = wave_1d(f, N=200, dt=0.001, T=1.0)
+
 times = [0.0, 0.1, 0.2, 0.3, 0.4]
 plt.figure()
 
