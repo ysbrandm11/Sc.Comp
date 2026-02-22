@@ -1,10 +1,13 @@
 import numpy as np
 from Ass1.src.diffusion_td import apply_bc
 
-def jacobi(c, max_iterations=1000, eps=1e-5, return_delta=False):
+def jacobi(c, max_iterations=1000, eps=1e-5, return_delta=False, mask=None):
     c = np.array(c, dtype=float, copy=True)
     c_new = c.copy()
     deltas = []
+
+    apply_bc(c, mask)
+    apply_bc(c_new, mask)
 
     for k in range(max_iterations):
         c_ip1 = np.roll(c, -1, axis=0)
@@ -17,9 +20,15 @@ def jacobi(c, max_iterations=1000, eps=1e-5, return_delta=False):
             c[:, :-2]
         )
 
-        apply_bc(c_new)      
+        apply_bc(c_new, mask)   
 
-        delta = np.max(np.abs(c_new[:, 1:-1] - c[:, 1:-1]))
+        diff = np.abs(c_new - c)
+        diff[:, 0] = 0.0
+        diff[:, -1] = 0.0
+        if mask is not None:
+            diff[mask] = 0.0
+
+        delta = np.max(np.abs(diff))
         deltas.append(delta)
 
         if delta < eps:
@@ -34,16 +43,22 @@ def jacobi(c, max_iterations=1000, eps=1e-5, return_delta=False):
     else:
         return c
     
-def gauss_seidel(c, max_iterations=1000, eps=1e-5, return_delta=False):
+def gauss_seidel(c, max_iterations=1000, eps=1e-5, return_delta=False, mask=None):
     c = np.array(c, dtype=float, copy=True)
     nx, ny = c.shape
     deltas = []
+
+    apply_bc(c, mask)
 
     for k in range(max_iterations):
         delta = 0.0
 
         for j in range(1, ny - 1):
             for i in range(nx):
+                if mask is not None and mask[i, j]:
+                    c[i, j] = 0.0
+                    continue
+
                 c_ip1 = (i + 1) % nx
                 c_im1 = (i - 1) % nx
 
@@ -59,7 +74,7 @@ def gauss_seidel(c, max_iterations=1000, eps=1e-5, return_delta=False):
                 if diff > delta:
                     delta = diff
 
-        apply_bc(c)
+        apply_bc(c, mask)
         deltas.append(delta)
 
         if delta < eps:
@@ -72,17 +87,22 @@ def gauss_seidel(c, max_iterations=1000, eps=1e-5, return_delta=False):
         return c
 
 def sor(c, omega, max_iterations=1000, eps=1e-5, return_delta = False,
-        find_omega=False):
+        find_omega=False, mask=None):
     c = np.array(c, dtype=float, copy=True)
     nx, ny = c.shape
     deltas = []
     converged = False
+
+    apply_bc(c, mask)
 
     for k in range(max_iterations):
         delta = 0.0
 
         for j in range(1, ny - 1):
             for i in range(nx):
+                if mask is not None and mask[i, j]:
+                    c[i, j] = 0.0
+                    continue
                 c_ip1 = (i + 1) % nx
                 c_im1 = (i - 1) % nx
                 
@@ -99,7 +119,7 @@ def sor(c, omega, max_iterations=1000, eps=1e-5, return_delta = False,
                 if diff > delta:
                     delta = diff
 
-        apply_bc(c)
+        apply_bc(c, mask)
         deltas.append(delta)
 
         if delta < eps:

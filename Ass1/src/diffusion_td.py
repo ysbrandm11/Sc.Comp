@@ -7,9 +7,9 @@ def make_grid(N: int , L: float = 1.0):
     return x, y, dx
 
 
-def initialize_c(N: int) -> np.ndarray:
+def initialize_c(N: int, mask=None) -> np.ndarray:
     c = np.zeros((N, N+1), dtype=float)
-    apply_bc(c)
+    apply_bc(c, mask)
     return c
 
 
