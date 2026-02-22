@@ -1,39 +1,37 @@
-from test_solvers_eq import make_c
-import matplotlib.pyplot as plt
-from Solvers import jacobi, gauss_seidel, sor
 import numpy as np
+import matplotlib.pyplot as plt
 
-Nx, Ny = 50, 50
-c0 = make_c(Nx, Ny)
-c0[1:-1, :] = np.random.rand(c0.shape[0]-2, c0.shape[1])
+from Ass1.src.diffusion_iter import jacobi, gauss_seidel, sor   # adjust import if needed
+from Ass1.src.diffusion_td import make_grid, initialize_c
 
-_, d_jac = jacobi(c0.copy(), return_delta=True, max_iterations=100000, eps=1e-12)
-_, d_gs  = gauss_seidel(c0.copy(), return_delta=True, max_iterations=10000, eps=1e-12)
+N = 50
+x, y, dx = make_grid(N, L=1.0)
+c = initialize_c(N)
 
-print("Jacobi iterations:", len(d_jac), "final δ:", d_jac[-1])
-print("GS iterations:    ", len(d_gs), "final δ:", d_gs[-1])
+# Jacobi + GS
+_, dJ  = jacobi(c.copy(), max_iterations=5000, eps=1e-5, return_delta=True)
+_, dGS = gauss_seidel(c.copy(), max_iterations=5000, eps=1e-5, return_delta=True)
 
-print("klaar met jacobi en gauss-seidel")
-# omegas = [0.8, 1.0, 1.3]
-# sor_deltas = {}
-# for w in omegas:
-#     _, d = sor(c0.copy(), omega=w, return_delta=True, max_iterations=500, eps=1e-12)
-#     print(f"klaar met SOR ω={w}")
-#     sor_deltas[w] = d
+# SOR for multiple omega
+omegas = [1.0, 1.5, 1.7, 1.85, 1.9]
+dSOR = {}
+for w in omegas:
+    _, dw = sor(c.copy(), omega=w, max_iterations=5000, eps=1e-5, return_delta=True)
+    dSOR[w] = dw
 
-
-print("len(dJ), len(dG):", len(d_jac), len(d_gs))
-print("max |dJ-dG|:", np.max(np.abs(np.array(d_jac) - np.array(d_gs))))
-print("allclose?:", np.allclose(d_jac, d_gs))
-# Plot (log-lin)
 plt.figure()
-plt.semilogy(d_jac, label="Jacobi")
-plt.semilogy(d_gs,  label="Gauss–Seidel")
-# for w, d in sor_deltas.items():
-#     plt.semilogy(d, label=f"SOR ω={w}")
+plt.yscale("log")
+
+plt.semilogy(dJ, label="Jacobi")
+plt.semilogy(dGS, label="Gauss–Seidel")
+
+for w, dw in dSOR.items():
+    plt.plot(range(1, len(dw)+1), dw, label=f"SOR ω={w}")
 
 plt.xlabel("Iteration k")
-plt.ylabel("δ(k)")
+plt.ylabel(r"$\delta_k = \max |c^{k+1}-c^k|$")
+plt.title(f"Convergence comparison (N={N})")
 plt.legend()
-plt.grid(True, which="both")
+plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+plt.tight_layout()
 plt.show()
