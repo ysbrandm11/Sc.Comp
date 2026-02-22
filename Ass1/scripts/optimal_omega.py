@@ -1,25 +1,42 @@
-from Solvers import sor
-from test_solvers_eq import make_c
+import numpy as np
+import matplotlib.pyplot as plt
+from Ass1.src.diffusion_td import initialize_c
+from Ass1.src.diffusion_iter import sor
 
-omega_max = 2.0
-omega_min = 1.7
+def best_omega_for_N(N, eps=1e-5, max_iterations=20000, n_omegas=20):
+    c0 = initialize_c(N)
+    omegas = np.linspace(1.0, 1.99, n_omegas)
 
-def find_max_omega(c, omega_min=omega_min, omega_max=omega_max, eps=1e-3):
-    #val_min = sor(c.copy(), omega=omega_min, max_iterations=int(1e5), find_omega=True)
-    val_max = sor(c.copy(), eps = 0.01, omega=omega_max, max_iterations=int(1e5), find_omega=True)
-    dif = omega_max - omega_min
-    print(dif)
-    while dif > eps:
-        omega_mid = (omega_min + omega_max) / 2
-        val_mid = sor(c.copy(), eps=0.01, omega=omega_mid, max_iterations=int(1e5), find_omega=True)
-        if val_mid >= val_max:
-            omega_max = omega_mid
-            val_max = val_mid
-        else:
-            omega_min = omega_mid
-            #val_min = val_mid
-        dif = omega_max - omega_min
-        print(dif)
-    return omega_mid
+    iterations = np.empty_like(omegas)
+    for i, w in enumerate(omegas):
+        iterations[i] = sor(
+            c0.copy(),
+            omega=w,
+            eps=eps,
+            max_iterations=max_iterations,
+            find_omega=True
+        )
 
-find_max_omega(make_c(Nx=50, Ny=50))
+    best_idx = np.argmin(iterations)
+    return omegas[best_idx], int(iterations[best_idx]), omegas, iterations
+
+
+Ns = [10, 20, 30, 40, 50]
+
+best_ws = []
+best_its = []
+
+for N in Ns:
+    w_star, it_star, _, _ = best_omega_for_N(N, eps=1e-5, n_omegas=60)
+    best_ws.append(w_star)
+    best_its.append(it_star)
+    print(f"N={N:3d}  ω={w_star:.4f}  iterations={it_star}")
+
+plt.figure()
+plt.plot(Ns, best_ws, marker="o")
+plt.xlabel("Grid size N")
+plt.ylabel("Optimal ω")
+plt.title("Optimal SOR factor ω vs N")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
