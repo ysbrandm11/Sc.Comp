@@ -13,9 +13,11 @@ def initialize_c(N: int) -> np.ndarray:
     return c
 
 
-def apply_bc(c: np.ndarray) -> None:
+def apply_bc(c: np.ndarray, mask=None) -> None:
     c[:, 0] = 0.0
     c[:, -1] = 1.0
+    if mask is not None:
+        c[mask] = 0.0
 
 
 def step_explicit(c: np.ndarray, D: float, dt: float, dx: float) -> np.ndarray:
@@ -55,3 +57,13 @@ def run_diffusion(N: int, D: float, dt: float, t_end: float, L: float = 1.0) -> 
         c = step_explicit(c, D, dt, dx)
 
     return c
+
+
+def make_sink_mask(N: int):
+    mask = np.zeros((N, N+1), dtype=bool)
+
+    mask[15:35, 15:30] = True
+
+    mask[:, 0] = False
+    mask[:, -1] = False
+    return mask
