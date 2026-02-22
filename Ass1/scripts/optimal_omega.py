@@ -22,7 +22,6 @@ def best_omega_for_N(N, eps=1e-5, max_iterations=20000, n_omegas=20):
 
 
 Ns = [10, 20, 30, 40, 50]
-
 best_ws = []
 best_its = []
 

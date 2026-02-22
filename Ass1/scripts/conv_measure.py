@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Ass1.src.diffusion_iter import jacobi, gauss_seidel, sor   # adjust import if needed
+from Ass1.src.diffusion_iter import jacobi, gauss_seidel, sor
 from Ass1.src.diffusion_td import make_grid, initialize_c
 
 N = 50
@@ -32,6 +32,6 @@ plt.xlabel("Iteration k")
 plt.ylabel(r"$\delta_k = \max |c^{k+1}-c^k|$")
 plt.title(f"Convergence comparison (N={N})")
 plt.legend()
-plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+plt.grid(True, linestyle="--", linewidth=0.5)
 plt.tight_layout()
 plt.show()

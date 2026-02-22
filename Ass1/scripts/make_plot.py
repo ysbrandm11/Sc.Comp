@@ -10,7 +10,7 @@ times = [0.0, 0.1, 0.2, 0.3, 0.4]
 plt.figure()
 
 for t in times:
-    n = int(t / dt)   # convert time → time index
+    n = int(t / dt)
     plt.plot(x, U[n, :], label=f"t={t}")
 
 plt.xlabel("x")

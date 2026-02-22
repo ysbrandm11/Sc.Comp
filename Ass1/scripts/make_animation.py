@@ -1,9 +1,9 @@
-from Wave_function import wave_1d
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import numpy as np
 
 # Change according to which function wanted
+from Wave_function import wave_1d
 from functions_exc1 import phi_3 as f
 
 x, U, dt = wave_1d(f, N=200, dt=0.001, T=1.0)

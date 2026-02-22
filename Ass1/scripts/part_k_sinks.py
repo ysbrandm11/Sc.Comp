@@ -10,7 +10,7 @@ mask = make_sink_mask(N)
 
 c = initialize_c(N, mask=mask)
 
-# sweep ω
+# sweep w parameter
 omegas = np.linspace(1.0, 1.99, 60)
 iters = []
 for w in omegas:
