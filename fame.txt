@@ -1,0 +1,11 @@
+Total commits: 46
+Total ctimes: 137
+Total files: 25
+Total loc: 731
+| Author           |   loc |   coms |   fils |  distribution   |
+|:-----------------|------:|-------:|-------:|:----------------|
+| skarbonp123      |   383 |     19 |     14 | 52.4/41.3/56.0  |
+| ysbrandm11       |   263 |     14 |      7 | 36.0/30.4/28.0  |
+| Philippe Skarbon |    83 |     10 |      3 | 11.4/21.7/12.0  |
+| Philippe         |     2 |      2 |      1 | 0.3/ 4.3/ 4.0   |
+| Federico Rossi   |     0 |      1 |      0 | 0.0/ 2.2/ 0.0   |
