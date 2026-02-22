@@ -16,3 +16,6 @@ def analytical_c(y: np.ndarray, t: float, D: float = 1.0, n_terms: int = 200) ->
         c += term1 - term2
 
     return c
+
+def analytical_steady(y: np.ndarray) -> np.ndarray:
+    return y

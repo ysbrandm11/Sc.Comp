@@ -1,103 +1,119 @@
 import numpy as np
-
+from Ass1.src.diffusion_td import apply_bc
 
 def jacobi(c, max_iterations=1000, eps=1e-5, return_delta=False):
-    c = c.astype(float)
-    ny, nx = c.shape
+    c = np.array(c, dtype=float, copy=True)
     c_new = c.copy()
     deltas = []
 
     for k in range(max_iterations):
-        delta = 0.0
-        for j in range(1, ny - 1):
-            for i in range(nx):
+        c_ip1 = np.roll(c, -1, axis=0)
+        c_im1 = np.roll(c,  1, axis=0)
 
-                c_new[j, i] = 0.25 * (
-                    c[j, (i + 1) % nx] +
-                    c[j, (i - 1) % nx] +
-                    c[j + 1, i] +
-                    c[j - 1, i]
-                )
+        c_new[:, 1:-1] = 0.25 * (
+            c_ip1[:, 1:-1] +
+            c_im1[:, 1:-1] +
+            c[:, 2:] +
+            c[:, :-2]
+        )
 
-                delta = max(delta, abs(c_new[j, i] - c[j, i]))
-        c_new[0, :]  = c[0, :]
-        c_new[-1, :] = c[-1, :]
+        apply_bc(c_new)      
 
+        delta = np.max(np.abs(c_new[:, 1:-1] - c[:, 1:-1]))
         deltas.append(delta)
 
         if delta < eps:
+            c = c_new
             print(f"Converged after {k+1} iterations")
             break
-        c[:, :] = c_new[:, :]
 
-    return (c_new, deltas) if return_delta else c_new
+        c, c_new = c_new, c
 
+    if return_delta:
+        return (c, deltas)
+    else:
+        return c
+    
 def gauss_seidel(c, max_iterations=1000, eps=1e-5, return_delta=False):
-    c = c.astype(float)
-    ny, nx = c.shape
+    c = np.array(c, dtype=float, copy=True)
+    nx, ny = c.shape
     deltas = []
-
-    # store fixed y-boundaries (Dirichlet)
-    bottom = c[0, :].copy()
-    top    = c[-1, :].copy()
 
     for k in range(max_iterations):
         delta = 0.0
 
         for j in range(1, ny - 1):
             for i in range(nx):
+                c_ip1 = (i + 1) % nx
+                c_im1 = (i - 1) % nx
 
-                old_value = c[j, i]
-                c[j, i] = 0.25 * (
-                    c[j, (i + 1) % nx] +
-                    c[j, (i - 1) % nx] +
-                    c[j + 1, i] +
-                    c[j - 1, i]
+                old_value = c[i, j]
+                c[i, j] = 0.25 * (
+                    c[c_ip1, j] +
+                    c[c_im1, j] +
+                    c[i, j + 1] +
+                    c[i, j - 1]
                 )
 
-                delta = max(delta, abs(c[j, i] - old_value))
+                diff = abs(c[i, j] - old_value)
+                if diff > delta:
+                    delta = diff
 
-        c[0, :]  = bottom
-        c[-1, :] = top
-
+        apply_bc(c)
         deltas.append(delta)
 
         if delta < eps:
             print(f"Converged after {k+1} iterations")
             break
 
-    return (c, deltas) if return_delta else c
+    if return_delta:
+        return (c, deltas)
+    else:
+        return c
 
 def sor(c, omega, max_iterations=1000, eps=1e-5, return_delta = False,
         find_omega=False):
-    c = c.astype(float)
-    ny, nx = c.shape
+    c = np.array(c, dtype=float, copy=True)
+    nx, ny = c.shape
     deltas = []
-    bottom = c[0, :].copy()
-    top    = c[-1, :].copy()
+    converged = False
 
     for k in range(max_iterations):
         delta = 0.0
 
         for j in range(1, ny - 1):
             for i in range(nx):
-                old_value = c[j, i]
-                c[j, i] = (omega/4) * (
-                    c[j, (i + 1) % nx] +
-                    c[j, (i - 1) % nx] +
-                    c[j + 1, i] +
-                    c[j - 1, i]
-                ) + (1 - omega) * old_value
-                delta = max(delta, abs(c[j, i] - old_value))
+                c_ip1 = (i + 1) % nx
+                c_im1 = (i - 1) % nx
+                
+                old_value = c[i, j]
+                gs = 0.25 * (
+                    c[c_ip1, j] +
+                    c[c_im1, j] +
+                    c[i, j + 1] +
+                    c[i, j - 1]
+                )
+                c[i, j] = (1.0 - omega) * old_value + omega * gs
 
-        c[0, :]  = bottom
-        c[-1, :] = top
+                diff = abs(c[i, j] - old_value)
+                if diff > delta:
+                    delta = diff
 
+        apply_bc(c)
         deltas.append(delta)
 
         if delta < eps:
+            converged = True
             print(f"Converged after {k+1} iterations")
             break
+    
     if find_omega:
-        return k+1
-    return c if not return_delta else (c, deltas)
+        if converged:
+            return k+1
+        else:
+            return max_iterations
+        
+    if return_delta:
+        return (c, deltas)
+    else:
+        return c
